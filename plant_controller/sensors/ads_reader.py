@@ -23,36 +23,37 @@ class ADSReader:
         self.channels: Dict[str, object] = {}
         self.samples = samples
         self.delay_between_reads = delay_between_reads
-        if ADS1115 and board and busio and ADS:
+        self._fallback: Dict[str, float] = {}
+        
+        if ADS1115 and board and busio:
             i2c = busio.I2C(board.SCL, board.SDA)
             for address, channel_map in configs.items():
                 ads = ADS1115(i2c, address=address)
                 for name, ch in channel_map.items():
-                    ads_channel = getattr(ADS, f"P{ch}")
-                    self.channels[name] = AnalogIn(ads, ads_channel)
-        self._fallback: Dict[str, float] = {
-            name: 0.0 for channel_map in configs.values() for name in channel_map.keys()
-        }
+                    # Use channel number directly like old code: AnalogIn(ads, 0)
+                    self.channels[name] = AnalogIn(ads, ch)
+                    self._fallback[name] = 0.0
+        else:
+            # Fallback when libraries not available
+            for channel_map in configs.values():
+                for name in channel_map.keys():
+                    self._fallback[name] = 0.0
 
+    def read_voltage_averaged(self, name: str) -> Optional[float]:
+        """Read and average multiple samples exactly like the old working code."""
+        channel = self.channels.get(name)
+        if not channel:
+            return self._fallback.get(name)
+        
+        # Take multiple samples and average them - exactly like old code
+        voltages = [channel.voltage for _ in range(self.samples)]
+        avg_voltage = sum(voltages) / len(voltages)
+        return float(avg_voltage)
+    
     def read_voltage(self, name: str) -> Optional[float]:
         """Read a single voltage sample (backward compatibility)."""
         channel = self.channels.get(name)
         if channel:
             return float(channel.voltage)
         return self._fallback.get(name)
-
-    def read_voltage_averaged(self, name: str) -> Optional[float]:
-        """Read and average multiple samples like the old working code."""
-        channel = self.channels.get(name)
-        if not channel:
-            return self._fallback.get(name)
-        
-        # Take multiple samples and average them
-        voltages = []
-        for _ in range(self.samples):
-            voltages.append(float(channel.voltage))
-            time.sleep(self.delay_between_reads)
-        
-        avg_voltage = sum(voltages) / len(voltages)
-        return avg_voltage
 

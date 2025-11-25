@@ -4,7 +4,7 @@ Python control stack for the Raspberry Pi 4 grow system. It manages humidity, CO
 
 ## Features
 - Modular drivers for relays (PCF8574 + GPIO), PWM peltiers, vent servos, and syringe pump
-- Sensor hub that polls DHT22, DS18B20, and multiple ADS1115 analog channels (soil moisture, pH, TDS/EC, MG811 CO₂)
+- Sensor hub that polls DHT22, DS18B20, and multiple ADS1115 analog channels (soil moisture, pH, TDS/EC, MG811 CO₂). ADS1115 readings use averaged samples for accuracy, with proper TDS/EC polynomial formulas and temperature compensation matching the original working code.
 - Controllers for humidity, CO₂/venting, lighting schedules, PID temperature loops, nutrient mixing/dosing, and soil moisture pulses
 - BLE gateway publishing JSON telemetry packets and accepting manual override commands
 - Config-driven pinout, PID gains, schedules, and subsystem enable flags via `config.yaml`
