@@ -1,0 +1,38 @@
+import time
+import board
+import busio
+import adafruit_ads1x15.ads1115 as ADS
+from adafruit_ads1x15.analog_in import AnalogIn
+
+# Number of samples to average
+SAMPLES = 10
+DELAY_BETWEEN_READS = 0.5  # seconds
+
+# Initialize I2C and ADS1115
+i2c = busio.I2C(board.SCL, board.SDA)
+ads = ADS.ADS1115(i2c)
+chan = AnalogIn(ads, 0)  # Connect sensor to A0
+
+# Optional: calibration values (dry soil / wet soil)
+DRY_VOLTAGE = 3.8   # voltage when soil is completely dry
+WET_VOLTAGE = 2.3   # voltage when soil is completely wet
+
+def read_moisture():
+    voltages = [chan.voltage for _ in range(SAMPLES)]
+    avg_voltage = sum(voltages) / len(voltages)
+    
+    # Convert voltage to percentage
+    if avg_voltage >= DRY_VOLTAGE:
+        moisture = 0.0
+    elif avg_voltage <= WET_VOLTAGE:
+        moisture = 100.0
+    else:
+        moisture = (DRY_VOLTAGE - avg_voltage) / (DRY_VOLTAGE - WET_VOLTAGE) * 100
+    
+    return avg_voltage, moisture 
+
+while True:
+    voltage, moisture = read_moisture()
+    print("Voltage: {:.3f} V  Soil Moisture: {:.1f}%".format(voltage, moisture))
+    time.sleep(DELAY_BETWEEN_READS)
+

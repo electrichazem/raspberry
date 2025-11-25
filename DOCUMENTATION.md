@@ -1,0 +1,56 @@
+# Documentation
+
+## Hardware Mapping
+- **Relays via PCF8574 (I²C)**: heater, humidity fan, CO₂ exhaust, vent fans, lights, water pump, nutrient A/B.
+- **Direct GPIO relays**: main water feed (`GPIO22`), mix tank solenoid (`GPIO5`), plant output (`GPIO7`).
+- **Servos**: vent left/right on `GPIO20`/`GPIO21` using 50 Hz PWM.
+- **PWM channels**: air peltier (`GPIO19` PWM + `GPIO26` DIR), water peltier (`GPIO17` PWM + `GPIO27` DIR).
+- **Syringe driver**: `STEP12`, `DIR25`, `ENABLE6`, limit switches on `GPIO23`/`GPIO24`.
+- **Sensors**:
+  - DHT22 (`GPIO16`)
+  - DS18B20 (1-Wire bus on `GPIO4`)
+  - Two ADS1115 boards for soil moisture, reservoir humidity probe, pH, TDS/EC, MG811 CO₂, and spare analog channels.
+
+Update `config.yaml` if your wiring differs.
+
+## Software Architecture
+1. **Hardware drivers** in `plant_controller/hardware/` abstract relays, PWM, servos, and syringe movement so controllers only toggle named outputs.
+2. **Sensor hub** (`sensors/hub.py`) polls DHT22, DS18B20, and ADS1115 inputs, converts them to engineering values, and populates the shared `SystemState`.
+3. **Controllers** (`controllers/*.py`) implement individual subsystems:
+   - `humidity` cycles heater + fan with cooldown windows.
+   - `co2` vents via servos/fans, runs exhaust fans when ppm high.
+   - `lighting` enforces on/off schedule.
+   - `air_pid` and `water_pid` use PID to drive peltiers and circulation pump.
+   - `nutrient` doses Nutrient A/B or dilutes with water when EC out of band.
+   - `soil` pulses nutrient output solenoid and syringe when dish moisture low.
+4. **BLE gateway** streams telemetry JSON and accepts manual commands for relays, controller enable flags, or ad-hoc doses.
+5. **System manager** (`system_manager.py`) loads config, instantiates hardware + controllers, runs the main control loop, and coordinates BLE comms.
+
+## Control Loop
+1. Refresh sensors → update `SystemState`.
+2. Sequentially run controllers; each decides whether to act based on current readings and guard timers.
+3. Publish telemetry via BLE.
+4. Consume any manual command overrides (relays, controllers, dosing).
+5. Sleep to maintain the configured loop frequency (`loop_hz`).
+
+## Hardware Test Utility
+`plant_controller/tests/hardware_test.py` lets you validate peripherals individually. Invoke it with:
+```
+python -m plant_controller.tests.hardware_test --tests sensors servos
+```
+Tests read all pin assignments from `config.yaml`. Highlights:
+- `sensors`: Poll DHT22, DS18B20, ADS1115 channels and print readings.
+- `servos`: Jog each vent servo +10° and back.
+- `relays_expander` / `relays_direct`: Sequentially energize each relay for a few seconds.
+- `peltiers`: Drive each PWM channel forward (cool) and reverse (heat) for three minutes while logging progress.
+- `stepper`: Move the syringe one revolution up and one down using the configured STEP/DIR pins and limit switches.
+
+## Configuration
+- `loop_hz`: main loop frequency.
+- `ble`: port, baudrate, enable flag.
+- `sensors`: pin selections and ADS channel mapping.
+- `controllers`: thresholds, PID gains, schedule info, enable toggles.
+- `relays`, `servos`, `pwm`, `syringe`: hardware pinouts.
+
+All new features or behavior changes must be reflected both here and in the `README.md`.
+

@@ -1,0 +1,88 @@
+loop_hz: 1
+ble:
+  port: COM4
+  baudrate: 115200
+  enabled: true
+sensors:
+  dht22_gpio: 16
+  ds18b20_bus: "28-000000000000"
+  ads1115:
+    - address: 0x48
+      channels:
+        soil_moisture: 0
+        reservoir_moisture: 1
+        ph: 2
+        tds: 3
+    - address: 0x49 # Connect the ADDR to VIN
+      channels:
+        co2: 0
+        spare1: 1
+        spare2: 2
+        spare3: 3
+controllers:
+  humidity:
+    enabled: true
+    rh_min: 50
+    rh_max: 60
+    heater_cycle_seconds: 60
+    heater_rest_seconds: 30
+  co2:
+    enabled: true
+    ppm_min: 900
+    ppm_max: 1200
+  lighting:
+    enabled: true
+    schedule:
+      on_hour: 6
+      off_hour: 24
+  air_pid:
+    enabled: true
+    target_c: 24
+    kp: 12
+    ki: 0.6
+    kd: 1.5
+  water_pid:
+    enabled: true
+    target_c: 19
+    kp: 8
+    ki: 0.4
+    kd: 1.2
+  nutrient:
+    enabled: true
+    ec_min: 1.6
+    ec_max: 2.0
+  soil:
+    enabled: true
+    moisture_min: 0.35
+    pulse_ml: 0.5
+relays:
+  expander_address: 0x20
+  expander:
+    heater: 0
+    humidity_fan: 1
+    co2_exhaust: 2
+    vent_fans: 3
+    lights: 4
+    water_pump: 5
+    nutrient_a: 6
+    nutrient_b: 7
+  direct:
+    main_water: 22
+    mix_tank: 5
+    plant_output: 7
+servos:
+  vent_left: 20
+  vent_right: 21
+pwm:
+  air_peltier:
+    pwm_pin: 19
+    dir_pin: 26
+  water_peltier:
+    pwm_pin: 17
+    dir_pin: 27
+syringe:
+  step_pin: 12
+  dir_pin: 25
+  enable_pin: 6
+  limit_top: 23
+  limit_bottom: 24
