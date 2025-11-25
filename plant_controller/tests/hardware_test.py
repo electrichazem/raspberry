@@ -139,13 +139,34 @@ def main() -> None:
         default="config.yaml",
         help="Path to configuration file",
     )
+    parser.add_argument(
+        "--loop",
+        action="store_true",
+        help="Repeat the selected tests indefinitely",
+    )
+    parser.add_argument(
+        "--interval",
+        type=float,
+        default=5.0,
+        help="Seconds to wait between loops when --loop is set",
+    )
     args = parser.parse_args()
     config = load_config(args.config)
-    for name in args.tests:
-        try:
-            TESTS[name](config)
-        except Exception as exc:  # pragma: no cover
-            print(f"Test '{name}' failed: {exc}")
+    interval = max(args.interval, 0.0)
+
+    def run_selected_tests() -> None:
+        for name in args.tests:
+            try:
+                TESTS[name](config)
+            except Exception as exc:  # pragma: no cover
+                print(f"Test '{name}' failed: {exc}")
+
+    while True:
+        run_selected_tests()
+        if not args.loop:
+            break
+        print(f"Loop complete, sleeping for {interval} second(s)")
+        time.sleep(interval)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,24 @@
+Hardware test command reference
+================================
+
+Run all tests once (default order):
+python -m plant_controller.tests.hardware_test
+
+Run only the sensor poll:
+python -m plant_controller.tests.hardware_test --tests sensors
+
+Run relays (both expanders and direct GPIO) and servos:
+python -m plant_controller.tests.hardware_test --tests relays_expander relays_direct servos
+
+Exercise peltiers only:
+python -m plant_contr oller.tests.hardware_test --tests peltiers
+
+Cycle the syringe/stepper:
+python -m plant_controller.tests.hardware_test --tests stepper
+
+Run sensors + servos on a 10 second loop:
+python -m plant_controller.tests.hardware_test --tests sensors servos --loop --interval 10
+
+Loop all tests with default 5 second pause:
+python -m plant_controller.tests.hardware_test --loop
+

@@ -28,17 +28,37 @@ class SensorHub:
         water_temp = self.ds18b20.read()
         if water_temp is not None:
             state.reservoir.water_temp_c = water_temp
-        soil_v = self.ads.read_voltage("soil_moisture")
+        
+        # Use averaged readings for better accuracy
+        soil_v = self.ads.read_voltage_averaged("soil_moisture")
         if soil_v is not None:
             state.soil.moisture = min(max(soil_v / 3.3, 0.0), 1.0)
-        ph_v = self.ads.read_voltage("ph")
+        
+        ph_v = self.ads.read_voltage_averaged("ph")
         if ph_v is not None:
-            state.reservoir.ph = ph_v * 3.0
-        tds_v = self.ads.read_voltage("tds")
+            # pH formula from old code: -5.70 * voltage + calibration_value
+            # Using calibration value 16.83 from old code
+            state.reservoir.ph = -5.70 * ph_v + 16.83
+        
+        tds_v = self.ads.read_voltage_averaged("tds")
         if tds_v is not None:
-            state.reservoir.tds = tds_v * 2.0
-            state.reservoir.ec = state.reservoir.tds
-        co2_v = self.ads.read_voltage("co2")
+            # TDS/EC calculation from old code
+            temp = state.reservoir.water_temp_c if state.reservoir.water_temp_c is not None else 25.0
+            calibration_factor = 0.885  # From old code
+            
+            # EC calculation: polynomial formula
+            ec_value = (133.42 * tds_v**3 - 255.86 * tds_v**2 + 857.39 * tds_v) / 1000.0
+            # Temperature compensation to 25°C
+            ec25 = ec_value / (1 + 0.02 * (temp - 25.0))
+            # TDS = EC * 500
+            tds_value = ec25 * 500.0
+            # Apply calibration factor
+            tds_value *= calibration_factor
+            
+            state.reservoir.ec = ec25
+            state.reservoir.tds = tds_value
+        
+        co2_v = self.ads.read_voltage_averaged("co2")
         if co2_v is not None:
             state.environment.co2_ppm = 200 * co2_v
 

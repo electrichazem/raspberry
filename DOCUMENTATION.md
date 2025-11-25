@@ -15,7 +15,7 @@ Update `config.yaml` if your wiring differs.
 
 ## Software Architecture
 1. **Hardware drivers** in `plant_controller/hardware/` abstract relays, PWM, servos, and syringe movement so controllers only toggle named outputs.
-2. **Sensor hub** (`sensors/hub.py`) polls DHT22, DS18B20, and ADS1115 inputs, converts them to engineering values, and populates the shared `SystemState`.
+2. **Sensor hub** (`sensors/hub.py`) polls DHT22, DS18B20, and ADS1115 inputs, converts them to engineering values, and populates the shared `SystemState`. ADS1115 readings use averaged samples (10 samples by default) for improved accuracy. TDS/EC calculations use polynomial formulas with temperature compensation, and pH uses a calibrated linear formula matching the original working code.
 3. **Controllers** (`controllers/*.py`) implement individual subsystems:
    - `humidity` cycles heater + fan with cooldown windows.
    - `co2` vents via servos/fans, runs exhaust fans when ppm high.
@@ -44,7 +44,13 @@ Tests read all pin assignments from `config.yaml`. Highlights:
 - `relays_expander` / `relays_direct`: Sequentially energize each relay for a few seconds.
 - `peltiers`: Drive each PWM channel forward (cool) and reverse (heat) for three minutes while logging progress.
 - `stepper`: Move the syringe one revolution up and one down using the configured STEP/DIR pins and limit switches.
-Add `--loop` to repeat the selected tests automatically, and `--interval <seconds>` to control the pause between iterations (defaults to 5 s).
+Use `--loop` to repeat the selected tests automatically, and `--interval <seconds>` (defaults to 5 s) to control the pause between iterations. See `hardware_test_commands.txt` for ready-made command lines that cover the common combinations.
+
+## Arduino TFT Dashboard
+- `arduino/tft_dashboard/tft_dashboard.ino` drives the 3.5″ MCUFRIEND TFT on an Arduino Uno/Mega with resistive touch.
+- Displays three pages (environment, reservoir, system) with mock JSON data; Bluetooth integration will replace the placeholder `fetchBluetoothJson()` later.
+- On-screen touch buttons (Prev / Next) replace physical switches. Telemetry refreshes automatically every few seconds, so no manual refresh button is needed. Adjust the `XP/YP/XM/YM` pin defines and `map()` ranges if your shield uses different wiring.
+- Requires the `MCUFRIEND_kbv`, `Adafruit_GFX`, `TouchScreen`, and `ArduinoJson` libraries.
 
 ## Troubleshooting
 - **SyntaxError mentioning `from __future__ import annotations` inside `plant_controller/utils/datatypes.py`**: This stemmed from a duplicated block of dataclass definitions that placed a second `from __future__` import mid-file. Update to the latest code so the file only defines each dataclass once, with the import correctly at the top.

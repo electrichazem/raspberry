@@ -21,6 +21,12 @@ Use the helper script to exercise individual subsystems before running the full 
 python -m plant_controller.tests.hardware_test --tests sensors servos
 ```
 Available test names: `sensors`, `servos`, `relays_expander`, `relays_direct`, `peltiers`, `stepper`. The script loads pins and addresses from `config.yaml`, reports actions to the console, and applies short movements (e.g., 10° servo jogs, 1 revolution syringe moves) so you can verify hardware safely.
+Add `--loop` to keep rerunning the selected tests and `--interval <seconds>` (default 5) to control the pause between passes. The `hardware_test_commands.txt` file in the repo root lists sample invocations for every test combination.
+
+### TFT Dashboard (Arduino)
+- Located at `arduino/tft_dashboard/tft_dashboard.ino`
+- Uses MCUFRIEND + TouchScreen libraries; on-screen “Prev/Next” buttons handle pagination, and telemetry auto-refreshes every 5 s so you don’t need a manual refresh control
+- If your controller uses different touch pin assignments or raw ADC ranges, edit the `XP/YP/XM/YM` defines and the `map()` calibration values accordingly
 
 ## Troubleshooting
 - **`SyntaxError: from __future__ imports must occur at the beginning of the file`** when running hardware tests: pull the latest code so `plant_controller/utils/datatypes.py` contains a single set of dataclass definitions and the `from __future__ import annotations` line stays at the very top.
@@ -41,5 +47,7 @@ Send newline-delimited JSON over the BLE UART link:
   - `comms/` – BLE/serial gateway
   - `utils/` – config loader, datatypes, PID helper
 - `config.yaml` – hardware pins and controller tuning
+- `arduino/tft_dashboard/tft_dashboard.ino` – Uno sketch for the TFT telemetry display mock data UI
+- `hardware_test_commands.txt` – copy/paste command reference for hardware tests
 - `README.md`, `DOCUMENTATION.md` – keep both updated with behavior changes
 
