@@ -36,7 +36,7 @@ Update `config.yaml` if your wiring differs.
 ## Hardware Test Utility
 `plant_controller/tests/hardware_test.py` lets you validate peripherals individually. Invoke it with:
 ```
-python -m plant_controller.tests.hardware_test --tests sensors servos
+python -m plant_controller.tests.hardware_test --tests sensors servos --loop --interval 2
 ```
 Tests read all pin assignments from `config.yaml`. Highlights:
 - `sensors`: Poll DHT22, DS18B20, ADS1115 channels and print readings.
@@ -44,6 +44,10 @@ Tests read all pin assignments from `config.yaml`. Highlights:
 - `relays_expander` / `relays_direct`: Sequentially energize each relay for a few seconds.
 - `peltiers`: Drive each PWM channel forward (cool) and reverse (heat) for three minutes while logging progress.
 - `stepper`: Move the syringe one revolution up and one down using the configured STEP/DIR pins and limit switches.
+Add `--loop` to repeat the selected tests automatically, and `--interval <seconds>` to control the pause between iterations (defaults to 5 s).
+
+## Troubleshooting
+- **SyntaxError mentioning `from __future__ import annotations` inside `plant_controller/utils/datatypes.py`**: This stemmed from a duplicated block of dataclass definitions that placed a second `from __future__` import mid-file. Update to the latest code so the file only defines each dataclass once, with the import correctly at the top.
 
 ## Configuration
 - `loop_hz`: main loop frequency.

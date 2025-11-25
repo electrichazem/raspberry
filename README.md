@@ -22,6 +22,9 @@ python -m plant_controller.tests.hardware_test --tests sensors servos
 ```
 Available test names: `sensors`, `servos`, `relays_expander`, `relays_direct`, `peltiers`, `stepper`. The script loads pins and addresses from `config.yaml`, reports actions to the console, and applies short movements (e.g., 10° servo jogs, 1 revolution syringe moves) so you can verify hardware safely.
 
+## Troubleshooting
+- **`SyntaxError: from __future__ imports must occur at the beginning of the file`** when running hardware tests: pull the latest code so `plant_controller/utils/datatypes.py` contains a single set of dataclass definitions and the `from __future__ import annotations` line stays at the very top.
+
 ## BLE Command Examples
 Send newline-delimited JSON over the BLE UART link:
 ```json
