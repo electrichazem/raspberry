@@ -23,7 +23,7 @@ STEP_PIN = 12
 DIR_PIN = 24
 
 # Stepper motor settings
-STEPS_PER_REVOLUTION = 200  # Most common stepper motors (1.8° per step)
+STEPS_PER_REVOLUTION = 6400  # Most common stepper motors (1.8° per step)
 # If your motor is 400 steps/rev (0.9° per step), change this to 400
 
 STEP_DELAY = 0.001  # Delay between steps in seconds (1ms = 1000 steps/sec max)
