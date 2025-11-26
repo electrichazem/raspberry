@@ -60,6 +60,7 @@ Use `--loop` to repeat the selected tests automatically, and `--interval <second
 - `sensor_tests/system_step1_relay7.py`: first full-system step, energising only relay P7 on the PCF8574 for 5 seconds to verify wiring and default OFF states.
 - `sensor_tests/system_step2_peltiers_relay4.py`: second full-system step, running peltiers on PCA9685 channels 0 & 1 and turning on relay P4, keeping relay P7 ON from step 1.
 - `sensor_tests/system_step3_servos_relay6.py`: third full-system step, moving servos from 0° to 90° and turning on relay P6, keeping all previous outputs ON.
+- `sensor_tests/system_step4_relay4_relay7.py`: fourth full-system step, ensuring relay P4 + relay P7 are ON, keeping all previous outputs ON.
 - `sensor_tests/servo_pwm_test.py`: demonstrates servo control on GPIO20 using pigpio (`sudo apt install pigpio`, `pip install pigpio`, start `pigpiod`, then `python3 sensor_tests/servo_pwm_test.py`).
 - `sensor_tests/servo_driver_test.py`: exercises the PCA9685 servo/PWM board for dual servos + dual peltiers (`pip install adafruit-circuitpython-pca9685`, then `python3 sensor_tests/servo_driver_test.py`).
 - `sensor_tests/bt_link_test.py`: sanity-checks the Bluetooth serial link to the Arduino TFT using `pyserial` (bind HC-05/HC-06 to `/dev/rfcomm0`, then `python3 sensor_tests/bt_link_test.py`).
