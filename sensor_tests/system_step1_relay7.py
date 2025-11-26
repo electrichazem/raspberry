@@ -14,7 +14,7 @@ Requirements (inside your venv):
 Usage:
     python3 sensor_tests/system_step1_relay7.py
 """
-
+ 
 import time
 
 import board
@@ -33,11 +33,11 @@ def main() -> None:
     pins = [pcf.get_pin(n) for n in range(8)]
     # Ensure all relays are OFF (assuming active-low board: HIGH = off)
     for pin in pins:
-        pin.switch_to_output(value=True)
+        pin.switch_to_output(value=False)
 
     print("Step 1: ONLY relay P7 should energise and stay ON.\n")
     print(f"Energising relay P{RELAY_INDEX} (will remain ON after {GAP_SECONDS:.0f}s gap)")
-    pins[RELAY_INDEX].value = False  # active-low: LOW = ON
+    pins[RELAY_INDEX].value = True  # active-low: LOW = ON
     time.sleep(GAP_SECONDS)
     print("Gap elapsed. Relay P7 is still ON. You can now run the next step script.")
 
