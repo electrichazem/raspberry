@@ -1,134 +1,107 @@
-#!/usr/bin/env python3
-"""
-TB6600 Stepper Motor Test: Rotate one revolution forward, then one revolution backward.
-
-Hardware:
-  - TB6600 stepper driver module
-  - Step pin: GPIO12
-  - Direction pin: GPIO24
-  - Typical stepper: 200 steps/revolution (1.8° per step)
-
-Requirements:
-    pip install RPi.GPIO
-
-Usage:
-    python3 sensor_tests/tb6600_stepper_test.py
-"""
-
-import time
+# Based on: https://www.raspberrypi.org/forums/viewtopic.php?t=242928\.
+#
+# Software to drive 4 wire stepper motor using a TB6600 Driver
+# PRi - RPi 3B
+#
+# Route 3.3 VDC to the controller "+" input for each: ENA, PUL, and DIR
+#
+# Connect GPIO pins as shown below) to the "-" input for each: ENA, PUL, and DIR
+#
+#
+from time import sleep
 import RPi.GPIO as GPIO
+#
+PUL = 12  # Stepper Drive Pulses
+DIR = 25  # Controller Direction Bit (High for Controller default / LOW to Force a Direction Change).
+ENA = 22  # Controller Enable Bit (High to Enable / LOW to Disable).
+# DIRI = 14  # Status Indicator LED - Direction
+# ENAI = 15  # Status indicator LED - Controller Enable
+#
+# NOTE: Leave DIR and ENA disconnected, and the controller WILL drive the motor in Default direction if PUL is applied.
+# 
+GPIO.setmode(GPIO.BCM)
+# GPIO.setmode(GPIO.BOARD) # Do NOT use GPIO.BOARD mode. Here for comparison only. 
+#
+GPIO.setup(PUL, GPIO.OUT)
+GPIO.setup(DIR, GPIO.OUT)
+GPIO.setup(ENA, GPIO.OUT)
+# GPIO.setup(DIRI, GPIO.OUT)
+# GPIO.setup(ENAI, GPIO.OUT)
+#
+print('PUL = GPIO 17 - RPi 3B-Pin #11')
+print('DIR = GPIO 27 - RPi 3B-Pin #13')
+print('ENA = GPIO 22 - RPi 3B-Pin #15')
+# print('ENAI = GPIO 14 - RPi 3B-Pin #8')
+# print('DIRI = GPIO 15 - RPi 3B-Pin #10')
 
-# GPIO pins
-STEP_PIN = 12
-DIR_PIN = 24
+#
+print('Initialization Completed')
+#
+# Could have usesd only one DURATION constant but chose two. This gives play options.
+durationFwd = 5000 # This is the duration of the motor spinning. used for forward direction
+durationBwd = 5000 # This is the duration of the motor spinning. used for reverse direction
+print('Duration Fwd set to ' + str(durationFwd))
+print('Duration Bwd set to ' + str(durationBwd))
+#
+delay = 0.0000001 # This is actualy a delay between PUL pulses - effectively sets the mtor rotation speed.
+print('Speed set to ' + str(delay))
+#
+cycles = 1000 # This is the number of cycles to be run once program is started.
+cyclecount = 0 # This is the iteration of cycles to be run once program is started.
+print('number of Cycles to Run set to ' + str(cycles))
+#
+#
+def forward():
+    GPIO.output(ENA, GPIO.HIGH)
+    GPIO.output(ENAI, GPIO.HIGH)
+    print('ENA set to HIGH - Controller Enabled')
+    #
+    sleep(.5) # pause due to a possible change direction
+    GPIO.output(DIR, GPIO.LOW)
+    GPIO.output(DIRI, GPIO.LOW)
+    print('DIR set to LOW - Moving Forward at ' + str(delay))
+    print('Controller PUL being driven.')
+    for x in range(durationFwd): 
+        GPIO.output(PUL, GPIO.HIGH)
+        sleep(delay)
+        GPIO.output(PUL, GPIO.LOW)
+        sleep(delay)
+    GPIO.output(ENA, GPIO.LOW)
+    GPIO.output(ENAI, GPIO.LOW)
+    print('ENA set to LOW - Controller Disabled')
+    sleep(.5) # pause for possible change direction
+    return
+#
+#
+def reverse():
+    GPIO.output(ENA, GPIO.HIGH)
+    GPIO.output(ENAI, GPIO.HIGH)
+    print('ENA set to HIGH - Controller Enabled')
+    #
+    sleep(.5) # pause due to a possible change direction
+    GPIO.output(DIR, GPIO.HIGH)
+    GPIO.output(DIRI, GPIO.HIGH)
+    print('DIR set to HIGH - Moving Backward at ' + str(delay))
+    print('Controller PUL being driven.')
+    #
+    for y in range(durationBwd):
+        GPIO.output(PUL, GPIO.HIGH)
+        sleep(delay)
+        GPIO.output(PUL, GPIO.LOW)
+        sleep(delay)
+    GPIO.output(ENA, GPIO.LOW)
+    GPIO.output(ENAI, GPIO.LOW)
+    print('ENA set to LOW - Controller Disabled')
+    sleep(.5) # pause for possible change direction
+    return
 
-# Stepper motor settings
-STEPS_PER_REVOLUTION = 6400  # Most common stepper motors (1.8° per step)
-# If your motor is 400 steps/rev (0.9° per step), change this to 400
-
-STEP_DELAY = 0.001  # Delay between steps in seconds (1ms = 1000 steps/sec max)
-# Adjust STEP_DELAY to control speed:
-# - 0.001s = 1000 steps/sec = 5 rev/sec (fast)
-# - 0.002s = 500 steps/sec = 2.5 rev/sec (medium)
-# - 0.005s = 200 steps/sec = 1 rev/sec (slow)
-
-
-def setup_gpio():
-    """Initialize GPIO pins."""
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(STEP_PIN, GPIO.OUT)
-    GPIO.setup(DIR_PIN, GPIO.OUT)
-    
-    # Start with both pins LOW
-    GPIO.output(STEP_PIN, GPIO.LOW)
-    GPIO.output(DIR_PIN, GPIO.LOW)
-    print("GPIO initialized:")
-    print(f"  Step pin (GPIO{STEP_PIN}): ready")
-    print(f"  Direction pin (GPIO{DIR_PIN}): ready")
-
-
-def rotate_steps(steps, direction_forward=True):
-    """
-    Rotate the stepper motor a specified number of steps.
-    
-    Args:
-        steps: Number of steps to rotate
-        direction_forward: True for forward, False for backward
-    """
-    # Set direction
-    GPIO.output(DIR_PIN, GPIO.HIGH if direction_forward else GPIO.LOW)
-    direction_str = "forward" if direction_forward else "backward"
-    
-    print(f"\nRotating {steps} steps ({direction_str})...")
-    
-    # Generate step pulses
-    for i in range(steps):
-        # Step pulse: HIGH then LOW
-        GPIO.output(STEP_PIN, GPIO.HIGH)
-        time.sleep(STEP_DELAY / 2)  # Half delay for HIGH
-        GPIO.output(STEP_PIN, GPIO.LOW)
-        time.sleep(STEP_DELAY / 2)  # Half delay for LOW
-        
-        # Progress indicator every 50 steps
-        if (i + 1) % 50 == 0:
-            print(f"  {i + 1}/{steps} steps completed")
-    
-    print(f"✓ Completed {steps} steps ({direction_str})")
-
-
-def main():
-    """Main test sequence."""
-    print("=" * 60)
-    print("TB6600 STEPPER MOTOR TEST")
-    print("=" * 60)
-    print(f"\nConfiguration:")
-    print(f"  Steps per revolution: {STEPS_PER_REVOLUTION}")
-    print(f"  Step delay: {STEP_DELAY * 1000:.1f}ms")
-    print(f"  Estimated speed: {1.0 / STEP_DELAY / STEPS_PER_REVOLUTION:.1f} rev/sec")
-    
-    try:
-        setup_gpio()
-        
-        # Small delay to ensure everything is ready
-        time.sleep(0.5)
-        
-        # Rotate one revolution forward
-        print("\n" + "-" * 60)
-        print("STEP 1: Rotating ONE REVOLUTION FORWARD")
-        print("-" * 60)
-        rotate_steps(STEPS_PER_REVOLUTION, direction_forward=True)
-        
-        # Brief pause between rotations
-        print("\nPausing 1 second before reverse rotation...")
-        time.sleep(1.0)
-        
-        # Rotate one revolution backward
-        print("\n" + "-" * 60)
-        print("STEP 2: Rotating ONE REVOLUTION BACKWARD")
-        print("-" * 60)
-        rotate_steps(STEPS_PER_REVOLUTION, direction_forward=False)
-        
-        print("\n" + "=" * 60)
-        print("TEST COMPLETE")
-        print("=" * 60)
-        print("\nMotor should have rotated:")
-        print("  1. One full revolution forward")
-        print("  2. One full revolution backward")
-        print("  (Net rotation: 0)")
-        
-    except KeyboardInterrupt:
-        print("\n\nTest interrupted by user")
-    except Exception as e:
-        print(f"\n\nError: {e}")
-    finally:
-        # Cleanup GPIO
-        print("\nCleaning up GPIO...")
-        GPIO.output(STEP_PIN, GPIO.LOW)
-        GPIO.output(DIR_PIN, GPIO.LOW)
-        GPIO.cleanup()
-        print("GPIO cleanup complete")
-
-
-if __name__ == "__main__":
-    main()
-
+while cyclecount < cycles:
+    forward()
+    reverse()
+    cyclecount = (cyclecount + 1)
+    print('Number of cycles completed: ' + str(cyclecount))
+    print('Number of cycles remaining: ' + str(cycles - cyclecount))
+#
+GPIO.cleanup()
+print('Cycling Completed')
+#
