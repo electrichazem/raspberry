@@ -33,6 +33,7 @@ Add `--loop` to keep rerunning the selected tests and `--interval <seconds>` (de
 - `sensor_tests/ds18b20_test.py` reads the DS18B20 via the `/sys/bus/w1/devices` interface (enable 1-Wire, then run `python3 sensor_tests/ds18b20_test.py`).
 - `sensor_tests/dht22_test.py` mirrors the old DHT22 script (`pip install adafruit-circuitpython-dht RPi.GPIO`, then run `python3 sensor_tests/dht22_test.py`).
 - `sensor_tests/pcf8574_relay_test.py` walks each relay on the PCF8574 expander for 5 seconds (`pip install adafruit-circuitpython-pcf8574`, then run `python3 sensor_tests/pcf8574_relay_test.py`).
+- `sensor_tests/system_step1_relay7.py` runs only relay P7 on the PCF8574 for 5 seconds (first step of full-system sequence).
 - `sensor_tests/servo_pwm_test.py` sweeps a servo on GPIO20 using pigpio (`sudo apt install pigpio`, `pip install pigpio`, ensure `pigpiod` is running, then `python3 sensor_tests/servo_pwm_test.py`).
 - `sensor_tests/servo_driver_test.py` drives a PCA9685 servo/PWM board (needs `pip install adafruit-circuitpython-pca9685`; run `python3 sensor_tests/servo_driver_test.py`).
 - `sensor_tests/bt_link_test.py` sends heartbeat lines over a Bluetooth serial link to the Arduino TFT board (`pip install pyserial`, bind HC-05/HC-06 to `/dev/rfcomm0`, then `python3 sensor_tests/bt_link_test.py`).
