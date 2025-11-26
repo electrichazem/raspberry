@@ -33,7 +33,7 @@ from adafruit_pca9685 import PCA9685
 RELAY_I2C_ADDRESS = 0x27
 RELAY_7_INDEX = 7  # keep ON from step 1
 RELAY_4_INDEX = 4  # keep ON from step 2
-RELAY_6_INDEX = 5  # keep ON from step 3
+RELAY_6_INDEX = 6  # keep ON from step 3
 
 # PCA9685 PWM expander
 PWM_I2C_ADDRESS = 0x40
