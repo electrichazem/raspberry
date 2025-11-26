@@ -32,6 +32,7 @@ Add `--loop` to keep rerunning the selected tests and `--interval <seconds>` (de
 - `sensor_tests/test_ads_all_channels.py`, `sensor_tests/test_ads_sensor.py` help sanity-check ADS1115 channels without the full controller.
 - `sensor_tests/ds18b20_test.py` reads the DS18B20 via the `/sys/bus/w1/devices` interface (enable 1-Wire, then run `python3 sensor_tests/ds18b20_test.py`).
 - `sensor_tests/dht22_test.py` mirrors the old DHT22 script (`pip install adafruit-circuitpython-dht RPi.GPIO`, then run `python3 sensor_tests/dht22_test.py`).
+- `sensor_tests/pcf8574_relay_test.py` walks each relay on the PCF8574 expander for 5 seconds (`pip install adafruit-circuitpython-pcf8574`, then run `python3 sensor_tests/pcf8574_relay_test.py`).
 - `sensor_tests/VIRTUAL_ENV_SETUP.md` documents the recommended virtual environment workflow when running standalone scripts on the Pi.
 
 ## Troubleshooting
