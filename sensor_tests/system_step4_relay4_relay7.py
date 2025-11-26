@@ -5,12 +5,13 @@ System step 4 test: ensure relay 4 + relay 7 are ON (keeping all previous output
 Assumes:
   - Relay 7 (P7) is ON from step 1
   - Relay 4 (P4) is ON from step 2
+  - Relay 5 (P5) is ON from step 3
   - Relay 6 (P6) is ON from step 3
   - Peltiers on PCA9685 channels 0 & 1 are running from step 2
   - Servos on PCA9685 channels 2 & 3 are at 90° from step 3
 
 Behavior:
-  - Keeps all previous outputs ON (relay 7, relay 4, relay 6, peltiers, servos).
+  - Keeps all previous outputs ON (relay 7, relay 4, relay 5, relay 6, peltiers, servos).
   - Explicitly ensures relay 4 + relay 7 are ON.
   - Waits 5 seconds (gap), then exits leaving everything ON.
 
@@ -33,6 +34,7 @@ from adafruit_pca9685 import PCA9685
 RELAY_I2C_ADDRESS = 0x27
 RELAY_7_INDEX = 7  # keep ON from step 1
 RELAY_4_INDEX = 4  # keep ON from step 2
+RELAY_5_INDEX = 5  # keep ON from step 3
 RELAY_6_INDEX = 6  # keep ON from step 3
 
 # PCA9685 PWM expander
@@ -68,6 +70,10 @@ def main() -> None:
     print(f"Ensuring relay P{RELAY_4_INDEX} is ON (from step 2)")
     relay_pins[RELAY_4_INDEX].value = True
     
+    # Keep relay 5 ON (from step 3)
+    print(f"Keeping relay P{RELAY_5_INDEX} ON (from step 3)")
+    relay_pins[RELAY_5_INDEX].value = True
+    
     # Keep relay 6 ON (from step 3)
     print(f"Keeping relay P{RELAY_6_INDEX} ON (from step 3)")
     relay_pins[RELAY_6_INDEX].value = True
@@ -92,6 +98,7 @@ def main() -> None:
     print("Gap elapsed. Everything is still ON:")
     print(f"  - Relay P{RELAY_7_INDEX}: ON")
     print(f"  - Relay P{RELAY_4_INDEX}: ON")
+    print(f"  - Relay P{RELAY_5_INDEX}: ON")
     print(f"  - Relay P{RELAY_6_INDEX}: ON")
     print(f"  - Peltier channels {PELTIER_CHANNELS[0]} & {PELTIER_CHANNELS[1]}: running")
     print(f"  - Servo channels {SERVO_CHANNELS[0]} & {SERVO_CHANNELS[1]}: at {SERVO_ANGLE}°")

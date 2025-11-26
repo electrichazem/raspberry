@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-System step 3 test: move servos (0° → 90°) + turn on relay 6 (P6).
+System step 3 test: move servos (0° → 90°) + turn on relay 5 (P5) and relay 6 (P6).
 
 Assumes:
   - Relay 7 (P7) is ON from step 1
@@ -10,7 +10,7 @@ Assumes:
 Behavior:
   - Keeps all previous outputs ON (relay 7, relay 4, peltiers).
   - Moves servos from 0° to 90° on PCA9685 servo channels.
-  - Turns on relay 6 (P6).
+  - Turns on relay 5 (P5) and relay 6 (P6).
   - Waits 5 seconds (gap), then exits leaving everything ON.
 
 Requirements (inside your venv):
@@ -32,6 +32,7 @@ from adafruit_pca9685 import PCA9685
 RELAY_I2C_ADDRESS = 0x27
 RELAY_7_INDEX = 7  # keep ON from step 1
 RELAY_4_INDEX = 4  # keep ON from step 2
+RELAY_5_INDEX = 5  # turn ON in step 3
 RELAY_6_INDEX = 6  # turn ON in step 3
 
 # PCA9685 PWM expander
@@ -56,7 +57,7 @@ def main() -> None:
     pca = PCA9685(i2c, address=PWM_I2C_ADDRESS)
     pca.frequency = 50  # 50 Hz for servos & PWM
     
-    print("Step 3: Servos (0° → 90°) + Relay 6 (P6)\n")
+    print("Step 3: Servos (0° → 90°) + Relay 5 (P5) + Relay 6 (P6)\n")
     
     # Keep relay 7 ON (from step 1)
     print(f"Keeping relay P{RELAY_7_INDEX} ON (from step 1)")
@@ -85,7 +86,9 @@ def main() -> None:
         time.sleep(0.5)  # brief pause
         s.angle = 90
     
-    # Turn on relay 6
+    # Turn on relay 5 and relay 6
+    print(f"Turning ON relay P{RELAY_5_INDEX}")
+    relay_pins[RELAY_5_INDEX].value = True
     print(f"Turning ON relay P{RELAY_6_INDEX}")
     relay_pins[RELAY_6_INDEX].value = True
     
@@ -95,6 +98,7 @@ def main() -> None:
     print("Gap elapsed. Everything is still ON:")
     print(f"  - Relay P{RELAY_7_INDEX}: ON")
     print(f"  - Relay P{RELAY_4_INDEX}: ON")
+    print(f"  - Relay P{RELAY_5_INDEX}: ON")
     print(f"  - Relay P{RELAY_6_INDEX}: ON")
     print(f"  - Peltier channels {PELTIER_CHANNELS[0]} & {PELTIER_CHANNELS[1]}: running")
     print(f"  - Servo channels {SERVO_CHANNELS[0]} & {SERVO_CHANNELS[1]}: at 90°")
