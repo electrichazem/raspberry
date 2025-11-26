@@ -48,7 +48,7 @@ Use `--loop` to repeat the selected tests automatically, and `--interval <second
 
 ## Arduino TFT Dashboard
 - `arduino/tft_dashboard/tft_dashboard.ino` drives the 3.5″ MCUFRIEND TFT on an Arduino Uno/Mega with resistive touch.
-- Displays three pages (environment, reservoir, system) with mock JSON data; Bluetooth integration will replace the placeholder `fetchBluetoothJson()` later.
+- Displays three pages (environment, reservoir, system) with mock JSON data. A Bluetooth HC-05/HC-06 module on pins 10/11 marks the link as OK on the TFT header (`BT OK`) whenever it receives a line of text from the Pi; real JSON streaming will replace the static payload later.
 - On-screen touch buttons (Prev / Next) replace physical switches. Telemetry refreshes automatically every few seconds, so no manual refresh button is needed. Adjust the `XP/YP/XM/YM` pin defines and `map()` ranges if your shield uses different wiring.
 - Requires the `MCUFRIEND_kbv`, `Adafruit_GFX`, `TouchScreen`, and `ArduinoJson` libraries.
 
@@ -59,6 +59,7 @@ Use `--loop` to repeat the selected tests automatically, and `--interval <second
 - `sensor_tests/pcf8574_relay_test.py`: sequentially toggles each relay on the PCF8574 expander for verification (`pip install adafruit-circuitpython-pcf8574`, then `python3 sensor_tests/pcf8574_relay_test.py`).
 - `sensor_tests/servo_pwm_test.py`: demonstrates servo control on GPIO20 using pigpio (`sudo apt install pigpio`, `pip install pigpio`, start `pigpiod`, then `python3 sensor_tests/servo_pwm_test.py`).
 - `sensor_tests/servo_driver_test.py`: exercises the PCA9685 servo/PWM board for dual servos + dual peltiers (`pip install adafruit-circuitpython-pca9685`, then `python3 sensor_tests/servo_driver_test.py`).
+- `sensor_tests/bt_link_test.py`: sanity-checks the Bluetooth serial link to the Arduino TFT using `pyserial` (bind HC-05/HC-06 to `/dev/rfcomm0`, then `python3 sensor_tests/bt_link_test.py`).
 - `sensor_tests/VIRTUAL_ENV_SETUP.md`: step-by-step virtual environment guide for running sensor tests on the Pi.
 
 ## Troubleshooting

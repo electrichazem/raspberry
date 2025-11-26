@@ -1,6 +1,7 @@
 #include <MCUFRIEND_kbv.h>
 #include <ArduinoJson.h>
 #include <TouchScreen.h>
+#include <SoftwareSerial.h>
 
 // ---------- Telemetry ----------
 struct Telemetry {
@@ -43,6 +44,13 @@ const int16_t ROW2_Y = ROW1_Y + CARD_HEIGHT + CARD_GAP;
 const int16_t LEFT_X = 20;
 const int16_t RIGHT_X = SCREEN_WIDTH - CARD_WIDTH - 20;
 
+// ---------- Bluetooth Link ----------
+// Adjust pins to match your HC-05/HC-06 wiring
+const uint8_t BT_RX_PIN = 10;  // Arduino RX <- BT TX
+const uint8_t BT_TX_PIN = 11;  // Arduino TX -> BT RX
+SoftwareSerial btSerial(BT_RX_PIN, BT_TX_PIN);
+String btStatus = "BT WAIT";
+
 enum TouchAction { NONE, NEXT_PAGE, PREV_PAGE };
 
 void drawTouchButtons() {
@@ -77,14 +85,14 @@ TouchAction readTouchAction() {
     return NONE;
 }
 
-void drawHeader(const String &timeStr, const char *pageTitle) {
+void drawHeader(const String &rightText, const char *pageTitle) {
     tft.fillRect(0, 0, 480, 60, highlight);
     tft.setTextColor(0x0000);
     tft.setTextSize(3);
     tft.setCursor(20, 18);
     tft.print(pageTitle);
     tft.setCursor(320, 18);
-    tft.print(timeStr);
+    tft.print(rightText);
 }
 
 void drawCard(int16_t x, int16_t y, int16_t w, int16_t h) {
@@ -121,8 +129,10 @@ void showError(const char *msg) {
 }
 
 String fetchBluetoothJson() {
+    // Placeholder until we stream real JSON over Bluetooth.
+    // For now this still returns static data so UI has something to show.
     return R"({
-        "timestamp":"12:34:56",
+        "timestamp":"BT",
         "environment":{"air_temp_c":23.8,"humidity":58.2,"co2_ppm":1015},
         "reservoir":{"water_temp_c":19.4,"ph":6.1,"ec":1.8,"tds":820},
         "soil":{"moisture":0.41}
@@ -130,8 +140,11 @@ String fetchBluetoothJson() {
 }
 
 bool parseTelemetry(const String &payload, Telemetry &out) {
-    StaticJsonDocument<512> doc;
-    if (deserializeJson(doc, payload)) {
+    StaticJsonDocument<1024> doc;
+    DeserializationError err = deserializeJson(doc, payload);
+    if (err) {
+        Serial.print(F("JSON parse error: "));
+        Serial.println(err.c_str());
         return false;
     }
 
@@ -152,7 +165,7 @@ uint8_t currentPage = 0;
 const uint8_t pageCount = 3;
 
 void renderEnvPage(const Telemetry &data) {
-    drawHeader(data.timestamp, "Environment");
+    drawHeader(btStatus, "Environment");
     drawMetric(LEFT_X, ROW1_Y, "Air Temp", data.airTemp, "C", 0x07FF);
     drawMetric(RIGHT_X, ROW1_Y, "CO2", data.co2, "ppm", 0xF800, 0);
     drawMetric(LEFT_X, ROW2_Y, "Humidity", data.humidity, "%", 0x07E0);
@@ -160,7 +173,7 @@ void renderEnvPage(const Telemetry &data) {
 }
 
 void renderReservoirPage(const Telemetry &data) {
-    drawHeader(data.timestamp, "Reservoir");
+    drawHeader(btStatus, "Reservoir");
     drawMetric(LEFT_X, ROW1_Y, "Water Temp", data.waterTemp, "C", 0x07FF);
     drawMetric(RIGHT_X, ROW1_Y, "pH", data.ph, "", 0xFFE0, 2);
     drawMetric(LEFT_X, ROW2_Y, "EC", data.ec, "mS/cm", 0xFBE0, 2);
@@ -168,7 +181,7 @@ void renderReservoirPage(const Telemetry &data) {
 }
 
 void renderSystemPage(const Telemetry &data) {
-    drawHeader(data.timestamp, "System");
+    drawHeader(btStatus, "System");
     int16_t cardHeight = CONTENT_BOTTOM - 80;
     drawCard(20, 80, 440, cardHeight);
     tft.setTextColor(primaryText);
@@ -229,10 +242,17 @@ void setup() {
     tft.begin(id);
     tft.setRotation(1);
 
+    // Start Bluetooth UART for HC-05/HC-06
+    Serial.begin(115200);
+    btSerial.begin(9600);
+    Serial.println(F("TFT dashboard starting, waiting for Bluetooth..."));
+    btStatus = "BT WAIT";
+
     refreshTelemetry(latest);
 }
 
 void loop() {
+    // Handle touch navigation
     TouchAction action = readTouchAction();
     switch (action) {
         case NEXT_PAGE:
@@ -246,11 +266,17 @@ void loop() {
         default:
             break;
     }
-    static unsigned long lastRefresh = 0;
-    unsigned long now = millis();
-    if (now - lastRefresh >= 5000) {
-        refreshTelemetry(latest);
-        lastRefresh = now;
+
+    // Simple Bluetooth connection check: if we see any data, mark BT as OK
+    if (btSerial.available()) {
+        String incoming = btSerial.readStringUntil('\n');
+        incoming.trim();
+        if (incoming.length() > 0) {
+            Serial.print(F("BT RX: "));
+            Serial.println(incoming);
+            btStatus = "BT OK";
+            renderCurrentPage(latest);
+        }
     }
 }
 

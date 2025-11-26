@@ -35,6 +35,7 @@ Add `--loop` to keep rerunning the selected tests and `--interval <seconds>` (de
 - `sensor_tests/pcf8574_relay_test.py` walks each relay on the PCF8574 expander for 5 seconds (`pip install adafruit-circuitpython-pcf8574`, then run `python3 sensor_tests/pcf8574_relay_test.py`).
 - `sensor_tests/servo_pwm_test.py` sweeps a servo on GPIO20 using pigpio (`sudo apt install pigpio`, `pip install pigpio`, ensure `pigpiod` is running, then `python3 sensor_tests/servo_pwm_test.py`).
 - `sensor_tests/servo_driver_test.py` drives a PCA9685 servo/PWM board (needs `pip install adafruit-circuitpython-pca9685`; run `python3 sensor_tests/servo_driver_test.py`).
+- `sensor_tests/bt_link_test.py` sends heartbeat lines over a Bluetooth serial link to the Arduino TFT board (`pip install pyserial`, bind HC-05/HC-06 to `/dev/rfcomm0`, then `python3 sensor_tests/bt_link_test.py`).
 - `sensor_tests/VIRTUAL_ENV_SETUP.md` documents the recommended virtual environment workflow when running standalone scripts on the Pi.
 
 ## Troubleshooting
