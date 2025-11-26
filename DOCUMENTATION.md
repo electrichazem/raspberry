@@ -52,6 +52,11 @@ Use `--loop` to repeat the selected tests automatically, and `--interval <second
 - On-screen touch buttons (Prev / Next) replace physical switches. Telemetry refreshes automatically every few seconds, so no manual refresh button is needed. Adjust the `XP/YP/XM/YM` pin defines and `map()` ranges if your shield uses different wiring.
 - Requires the `MCUFRIEND_kbv`, `Adafruit_GFX`, `TouchScreen`, and `ArduinoJson` libraries.
 
+## Sensor Test Scripts
+- `sensor_tests/test_ads_sensor.py` / `sensor_tests/test_ads_all_channels.py`: standalone ADS1115 voltage readers (configure the channel/address inside the script).
+- `sensor_tests/ds18b20_test.py`: quick DS18B20 reader using `w1thermsensor` (enable 1-Wire, run `pip install w1thermsensor`, then `python3 sensor_tests/ds18b20_test.py`).
+- `sensor_tests/VIRTUAL_ENV_SETUP.md`: step-by-step virtual environment guide for running sensor tests on the Pi.
+
 ## Troubleshooting
 - **SyntaxError mentioning `from __future__ import annotations` inside `plant_controller/utils/datatypes.py`**: This stemmed from a duplicated block of dataclass definitions that placed a second `from __future__` import mid-file. Update to the latest code so the file only defines each dataclass once, with the import correctly at the top.
 

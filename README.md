@@ -28,6 +28,11 @@ Add `--loop` to keep rerunning the selected tests and `--interval <seconds>` (de
 - Uses MCUFRIEND + TouchScreen libraries; on-screen “Prev/Next” buttons handle pagination, and telemetry auto-refreshes every 5 s so you don’t need a manual refresh control
 - If your controller uses different touch pin assignments or raw ADC ranges, edit the `XP/YP/XM/YM` defines and the `map()` calibration values accordingly
 
+### Sensor Test Utilities
+- `sensor_tests/test_ads_all_channels.py`, `sensor_tests/test_ads_sensor.py` help sanity-check ADS1115 channels without the full controller.
+- `sensor_tests/ds18b20_test.py` reads the DS18B20 via `w1thermsensor` (enable 1-Wire, install `pip install w1thermsensor`, then run `python3 sensor_tests/ds18b20_test.py`).
+- `sensor_tests/VIRTUAL_ENV_SETUP.md` documents the recommended virtual environment workflow when running standalone scripts on the Pi.
+
 ## Troubleshooting
 - **`SyntaxError: from __future__ imports must occur at the beginning of the file`** when running hardware tests: pull the latest code so `plant_controller/utils/datatypes.py` contains a single set of dataclass definitions and the `from __future__ import annotations` line stays at the very top.
 

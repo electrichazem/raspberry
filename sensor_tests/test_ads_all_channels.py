@@ -9,12 +9,38 @@ It uses the same proven pattern from the old working codes:
 - Multiple samples with averaging for accuracy
 - Direct voltage readings
 
-SETUP:
-    1. Install dependencies:
+SETUP (using virtual environment - recommended):
+    
+    WINDOWS (PowerShell):
+    1. Create virtual environment:
+       python -m venv venv
+    
+    2. Activate it:
+       .\venv\Scripts\Activate.ps1
+       (If you get execution policy error, run first:
+        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser)
+    
+    3. Install dependencies:
        pip install adafruit-circuitpython-ads1x15 adafruit-blinka
     
-    2. Run the script:
+    4. Run the script:
+       python sensor_tests/test_ads_all_channels.py
+    
+    RASPBERRY PI (Linux):
+    1. Create virtual environment:
+       python3 -m venv venv
+    
+    2. Activate it:
+       source venv/bin/activate
+    
+    3. Install dependencies:
+       pip install adafruit-circuitpython-ads1x15 adafruit-blinka
+    
+    4. Run the script:
        python3 sensor_tests/test_ads_all_channels.py
+    
+    Alternative (system-wide, requires sudo on Pi):
+       sudo pip3 install adafruit-circuitpython-ads1x15 adafruit-blinka
 
 Configuration:
     Edit the ADS_BOARDS list below to match your hardware setup.
