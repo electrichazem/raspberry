@@ -57,6 +57,7 @@ Use `--loop` to repeat the selected tests automatically, and `--interval <second
 - `sensor_tests/ds18b20_test.py`: quick DS18B20 reader using the `/sys/bus/w1/devices` interface (enable 1-Wire, then `python3 sensor_tests/ds18b20_test.py`).
 - `sensor_tests/dht22_test.py`: simple DHT22 loop using `adafruit-circuitpython-dht` (`pip install adafruit-circuitpython-dht RPi.GPIO`, then `python3 sensor_tests/dht22_test.py`).
 - `sensor_tests/pcf8574_relay_test.py`: sequentially toggles each relay on the PCF8574 expander for verification (`pip install adafruit-circuitpython-pcf8574`, then `python3 sensor_tests/pcf8574_relay_test.py`).
+- `sensor_tests/servo_pwm_test.py`: demonstrates servo control on GPIO20 using pigpio (`sudo apt install pigpio`, `pip install pigpio`, start `pigpiod`, then `python3 sensor_tests/servo_pwm_test.py`).
 - `sensor_tests/VIRTUAL_ENV_SETUP.md`: step-by-step virtual environment guide for running sensor tests on the Pi.
 
 ## Troubleshooting
