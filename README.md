@@ -39,6 +39,7 @@ Add `--loop` to keep rerunning the selected tests and `--interval <seconds>` (de
 - `sensor_tests/system_step4_relay4_relay7.py` ensures relay P4 + relay P7 are ON, keeping all previous outputs ON (fourth step of full-system sequence).
 - `sensor_tests/system_step5_relay3.py` turns on relay P3, keeping all previous outputs ON (fifth and final step of full-system sequence).
 - `sensor_tests/system_full_sequence.py` runs all 5 steps sequentially in a single script with 5-second delays between each step (recommended for full system testing).
+- `sensor_tests/tb6600_stepper_test.py` tests TB6600 stepper motor driver: rotates one revolution forward, then one revolution backward (GPIO12 step, GPIO24 direction).
 - `sensor_tests/servo_pwm_test.py` sweeps a servo on GPIO20 using pigpio (`sudo apt install pigpio`, `pip install pigpio`, ensure `pigpiod` is running, then `python3 sensor_tests/servo_pwm_test.py`).
 - `sensor_tests/servo_driver_test.py` drives a PCA9685 servo/PWM board (needs `pip install adafruit-circuitpython-pca9685`; run `python3 sensor_tests/servo_driver_test.py`).
 - `sensor_tests/bt_link_test.py` sends heartbeat lines over a Bluetooth serial link to the Arduino TFT board (`pip install pyserial`, bind HC-05/HC-06 to `/dev/rfcomm0`, then `python3 sensor_tests/bt_link_test.py`).

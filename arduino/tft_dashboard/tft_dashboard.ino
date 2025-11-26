@@ -1,11 +1,9 @@
 #include <MCUFRIEND_kbv.h>
 #include <ArduinoJson.h>
 #include <TouchScreen.h>
-#include <SoftwareSerial.h>
 
 // ---------- Telemetry ----------
 struct Telemetry {
-    String timestamp;
     float airTemp;
     float humidity;
     float co2;
@@ -44,13 +42,6 @@ const int16_t ROW2_Y = ROW1_Y + CARD_HEIGHT + CARD_GAP;
 const int16_t LEFT_X = 20;
 const int16_t RIGHT_X = SCREEN_WIDTH - CARD_WIDTH - 20;
 
-// ---------- Bluetooth Link ----------
-// Adjust pins to match your HC-05/HC-06 wiring
-const uint8_t BT_RX_PIN = 10;  // Arduino RX <- BT TX
-const uint8_t BT_TX_PIN = 11;  // Arduino TX -> BT RX
-SoftwareSerial btSerial(BT_RX_PIN, BT_TX_PIN);
-String btStatus = "BT WAIT";
-
 enum TouchAction { NONE, NEXT_PAGE, PREV_PAGE };
 
 void drawTouchButtons() {
@@ -85,14 +76,12 @@ TouchAction readTouchAction() {
     return NONE;
 }
 
-void drawHeader(const String &rightText, const char *pageTitle) {
+void drawHeader(const char *pageTitle) {
     tft.fillRect(0, 0, 480, 60, highlight);
     tft.setTextColor(0x0000);
     tft.setTextSize(3);
     tft.setCursor(20, 18);
     tft.print(pageTitle);
-    tft.setCursor(320, 18);
-    tft.print(rightText);
 }
 
 void drawCard(int16_t x, int16_t y, int16_t w, int16_t h) {
@@ -129,26 +118,72 @@ void showError(const char *msg) {
 }
 
 String fetchBluetoothJson() {
-    // Placeholder until we stream real JSON over Bluetooth.
-    // For now this still returns static data so UI has something to show.
-    return R"({
-        "timestamp":"BT",
-        "environment":{"air_temp_c":23.8,"humidity":58.2,"co2_ppm":1015},
-        "reservoir":{"water_temp_c":19.4,"ph":6.1,"ec":1.8,"tds":820},
-        "soil":{"moisture":0.41}
-    })";
+    // Static variables to maintain state and simulate realistic variations
+    static float airTemp = 22.0;
+    static float humidity = 78.0;
+    static float soilMoisture = 0.70;
+    static float tds = 300.0;
+    
+    // Normal-like variations: small random steps with bounds
+    // Air temp: average 22°C, vary by ±0.1°C per update
+    airTemp += (random(-10, 11) / 100.0);  // -0.1 to +0.1
+    if (airTemp < 21.5) airTemp = 21.5;
+    if (airTemp > 22.5) airTemp = 22.5;
+    
+    // Humidity: average 78%, vary by ±0.5% per update
+    humidity += (random(-5, 6) / 10.0);  // -0.5 to +0.5
+    if (humidity < 76.0) humidity = 76.0;
+    if (humidity > 80.0) humidity = 80.0;
+    
+    // Soil moisture: average 70%, vary by ±0.5% per update
+    soilMoisture += (random(-5, 6) / 1000.0);  // -0.005 to +0.005
+    if (soilMoisture < 0.68) soilMoisture = 0.68;
+    if (soilMoisture > 0.72) soilMoisture = 0.72;
+    
+    // TDS: average 300 ppm, vary by ±5 ppm per update
+    tds += random(-5, 6);
+    if (tds < 290) tds = 290;
+    if (tds > 310) tds = 310;
+    
+    // Calculate EC from TDS (EC mS/cm ≈ TDS ppm / 500)
+    float ec = tds / 500.0;
+    
+    // CO2: fixed at 450 ppm
+    float co2 = 450.0;
+    
+    // Water temp: fixed at 26°C
+    float waterTemp = 26.0;
+    
+    // pH: fixed at 6.9
+    float ph = 6.9;
+    
+    // Build JSON string
+    String json = "{";
+    json += "\"environment\":{";
+    json += "\"air_temp_c\":" + String(airTemp, 1) + ",";
+    json += "\"humidity\":" + String(humidity, 1) + ",";
+    json += "\"co2_ppm\":" + String(co2, 0);
+    json += "},";
+    json += "\"reservoir\":{";
+    json += "\"water_temp_c\":" + String(waterTemp, 1) + ",";
+    json += "\"ph\":" + String(ph, 1) + ",";
+    json += "\"ec\":" + String(ec, 2) + ",";
+    json += "\"tds\":" + String(tds, 0);
+    json += "},";
+    json += "\"soil\":{";
+    json += "\"moisture\":" + String(soilMoisture, 2);
+    json += "}";
+    json += "}";
+    
+    return json;
 }
 
 bool parseTelemetry(const String &payload, Telemetry &out) {
-    StaticJsonDocument<1024> doc;
-    DeserializationError err = deserializeJson(doc, payload);
-    if (err) {
-        Serial.print(F("JSON parse error: "));
-        Serial.println(err.c_str());
+    StaticJsonDocument<512> doc;
+    if (deserializeJson(doc, payload)) {
         return false;
     }
 
-    out.timestamp = doc["timestamp"] | "--:--:--";
     out.airTemp = doc["environment"]["air_temp_c"] | NAN;
     out.humidity = doc["environment"]["humidity"] | NAN;
     out.co2 = doc["environment"]["co2_ppm"] | NAN;
@@ -162,10 +197,10 @@ bool parseTelemetry(const String &payload, Telemetry &out) {
 
 // ---------- Pages ----------
 uint8_t currentPage = 0;
-const uint8_t pageCount = 3;
+const uint8_t pageCount = 2;
 
 void renderEnvPage(const Telemetry &data) {
-    drawHeader(btStatus, "Environment");
+    drawHeader("Environment");
     drawMetric(LEFT_X, ROW1_Y, "Air Temp", data.airTemp, "C", 0x07FF);
     drawMetric(RIGHT_X, ROW1_Y, "CO2", data.co2, "ppm", 0xF800, 0);
     drawMetric(LEFT_X, ROW2_Y, "Humidity", data.humidity, "%", 0x07E0);
@@ -173,35 +208,11 @@ void renderEnvPage(const Telemetry &data) {
 }
 
 void renderReservoirPage(const Telemetry &data) {
-    drawHeader(btStatus, "Reservoir");
+    drawHeader("Reservoir");
     drawMetric(LEFT_X, ROW1_Y, "Water Temp", data.waterTemp, "C", 0x07FF);
     drawMetric(RIGHT_X, ROW1_Y, "pH", data.ph, "", 0xFFE0, 2);
     drawMetric(LEFT_X, ROW2_Y, "EC", data.ec, "mS/cm", 0xFBE0, 2);
     drawMetric(RIGHT_X, ROW2_Y, "TDS", data.tds, "ppm", 0x07E0, 0);
-}
-
-void renderSystemPage(const Telemetry &data) {
-    drawHeader(btStatus, "System");
-    int16_t cardHeight = CONTENT_BOTTOM - 80;
-    drawCard(20, 80, 440, cardHeight);
-    tft.setTextColor(primaryText);
-    tft.setTextSize(2);
-    tft.setCursor(40, 120);
-    tft.print("Extend this page with relays/pump info");
-    tft.setCursor(40, 160);
-    tft.print("Soil moisture: ");
-    if (isnan(data.soilMoisture)) {
-        tft.print("--");
-    } else {
-        tft.print(data.soilMoisture * 100.0, 1);
-    }
-    tft.print(" %");
-    int16_t footerY = 80 + cardHeight - 40;
-    if (footerY > CONTENT_BOTTOM - 30) {
-        footerY = CONTENT_BOTTOM - 30;
-    }
-    tft.setCursor(40, footerY);
-    tft.print("Add alarms, setpoints, etc.");
 }
 
 void renderCurrentPage(const Telemetry &data) {
@@ -212,9 +223,6 @@ void renderCurrentPage(const Telemetry &data) {
             break;
         case 1:
             renderReservoirPage(data);
-            break;
-        case 2:
-            renderSystemPage(data);
             break;
     }
     drawTouchButtons();
@@ -235,6 +243,8 @@ bool refreshTelemetry(Telemetry &state) {
 Telemetry latest;
 
 void setup() {
+    randomSeed(analogRead(0));  // Initialize random seed for realistic variations
+    
     uint16_t id = tft.readID();
     if (id == 0xD3D3) {
         id = 0x9486;
@@ -242,17 +252,10 @@ void setup() {
     tft.begin(id);
     tft.setRotation(1);
 
-    // Start Bluetooth UART for HC-05/HC-06
-    Serial.begin(115200);
-    btSerial.begin(9600);
-    Serial.println(F("TFT dashboard starting, waiting for Bluetooth..."));
-    btStatus = "BT WAIT";
-
     refreshTelemetry(latest);
 }
 
 void loop() {
-    // Handle touch navigation
     TouchAction action = readTouchAction();
     switch (action) {
         case NEXT_PAGE:
@@ -266,17 +269,11 @@ void loop() {
         default:
             break;
     }
-
-    // Simple Bluetooth connection check: if we see any data, mark BT as OK
-    if (btSerial.available()) {
-        String incoming = btSerial.readStringUntil('\n');
-        incoming.trim();
-        if (incoming.length() > 0) {
-            Serial.print(F("BT RX: "));
-            Serial.println(incoming);
-            btStatus = "BT OK";
-            renderCurrentPage(latest);
-        }
+    static unsigned long lastRefresh = 0;
+    unsigned long now = millis();
+    if (now - lastRefresh >= 5000) {
+        refreshTelemetry(latest);
+        lastRefresh = now;
     }
 }
 

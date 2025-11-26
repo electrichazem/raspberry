@@ -63,6 +63,7 @@ Use `--loop` to repeat the selected tests automatically, and `--interval <second
 - `sensor_tests/system_step4_relay4_relay7.py`: fourth full-system step, ensuring relay P4 + relay P7 are ON, keeping all previous outputs ON.
 - `sensor_tests/system_step5_relay3.py`: fifth and final full-system step, turning on relay P3, keeping all previous outputs ON.
 - `sensor_tests/system_full_sequence.py`: combined script that runs all 5 steps sequentially in a single execution with 5-second delays between each step (recommended for full system testing).
+- `sensor_tests/tb6600_stepper_test.py`: TB6600 stepper motor driver test that rotates one revolution forward, then one revolution backward using GPIO12 (step) and GPIO24 (direction) pins (`pip install RPi.GPIO`, then `python3 sensor_tests/tb6600_stepper_test.py`).
 - `sensor_tests/servo_pwm_test.py`: demonstrates servo control on GPIO20 using pigpio (`sudo apt install pigpio`, `pip install pigpio`, start `pigpiod`, then `python3 sensor_tests/servo_pwm_test.py`).
 - `sensor_tests/servo_driver_test.py`: exercises the PCA9685 servo/PWM board for dual servos + dual peltiers (`pip install adafruit-circuitpython-pca9685`, then `python3 sensor_tests/servo_driver_test.py`).
 - `sensor_tests/bt_link_test.py`: sanity-checks the Bluetooth serial link to the Arduino TFT using `pyserial` (bind HC-05/HC-06 to `/dev/rfcomm0`, then `python3 sensor_tests/bt_link_test.py`).
