@@ -18,7 +18,7 @@ import time
 import board
 import adafruit_dht
 
-DHT_PIN = board.D4  # change if you wired to another GPIO
+DHT_PIN = board.D16  # change if you wired to another GPIO
 
 
 def main() -> None:
