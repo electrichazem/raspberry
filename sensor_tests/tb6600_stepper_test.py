@@ -22,7 +22,7 @@ import atexit
 
 # GPIO pins
 PUL = 12   # Stepper Drive Pulses (Step pin)
-DIR = 24   # Controller Direction Bit (HIGH = one direction, LOW = other direction)
+DIR = 25   # Controller Direction Bit (HIGH = one direction, LOW = other direction)
 
 # Stepper motor settings
 STEPS_PER_REVOLUTION = 6400  # Adjust based on your motor and microstepping settings
