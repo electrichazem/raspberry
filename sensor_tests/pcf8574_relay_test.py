@@ -21,7 +21,6 @@ import busio
 from adafruit_pcf8574 import PCF8574
 
 I2C_ADDRESS = 0x27        # change if your expander uses another address
-HOLD_SECONDS = 5.0        # how long to hold each relay closed
 
 
 def main() -> None:
@@ -32,19 +31,23 @@ def main() -> None:
     for pin in pins:
         pin.switch_to_output(value=True)  # default off for active-low relays
 
-    print("Starting relay walk test (Ctrl+C to stop)\n")
+    print("Manual relay test:")
+    print("  - P0 on for 10 seconds, then off for 3 seconds")
+    print("  - P7 on for 10 seconds, then off")
+    print()
+
+    def pulse(pin_idx: int, on_seconds: float, off_seconds: float) -> None:
+        print(f"Energising relay P{pin_idx} for {on_seconds:.0f} seconds")
+        pins[pin_idx].value = False
+        time.sleep(on_seconds)
+        print(f"Releasing relay P{pin_idx} for {off_seconds:.0f} seconds")
+        pins[pin_idx].value = True
+        time.sleep(max(off_seconds, 0))
 
     try:
-        while True:
-            for idx, pin in enumerate(pins):
-                print(f"Energising relay P{idx}")
-                pin.value = False  # active-low
-                time.sleep(HOLD_SECONDS)
-                print(f"Releasing relay P{idx}")
-                pin.value = True
-                time.sleep(0.5)
-    except KeyboardInterrupt:
-        print("\nStopping – returning all relays to off state.")
+        pulse(0, 10.0, 3.0)
+        pulse(7, 10.0, 0.0)
+        print("\nSequence complete.")
     finally:
         for pin in pins:
             pin.value = True
