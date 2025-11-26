@@ -54,7 +54,8 @@ Use `--loop` to repeat the selected tests automatically, and `--interval <second
 
 ## Sensor Test Scripts
 - `sensor_tests/test_ads_sensor.py` / `sensor_tests/test_ads_all_channels.py`: standalone ADS1115 voltage readers (configure the channel/address inside the script).
-- `sensor_tests/ds18b20_test.py`: quick DS18B20 reader using `w1thermsensor` (enable 1-Wire, run `pip install w1thermsensor`, then `python3 sensor_tests/ds18b20_test.py`).
+- `sensor_tests/ds18b20_test.py`: quick DS18B20 reader using the `/sys/bus/w1/devices` interface (enable 1-Wire, then `python3 sensor_tests/ds18b20_test.py`).
+- `sensor_tests/dht22_test.py`: simple DHT22 loop using `adafruit-circuitpython-dht` (`pip install adafruit-circuitpython-dht RPi.GPIO`, then `python3 sensor_tests/dht22_test.py`).
 - `sensor_tests/VIRTUAL_ENV_SETUP.md`: step-by-step virtual environment guide for running sensor tests on the Pi.
 
 ## Troubleshooting
